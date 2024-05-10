@@ -9,8 +9,8 @@ const vehicles = [
   {
     type: 'Motociclos >50cm³ S/ Carro Lateral',
     localidades: { zonasCoexistencia: 20, outrasZonas: 50 },
-    foraLocalidades: 45,
-    viasReservadas: 90,
+    foraLocalidades: 90,
+    viasReservadas: 100,
     autoestradas: 120,
   },
   {
