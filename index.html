@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tabela de Velocidades - Carta de Condução</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -86,42 +87,25 @@
       }
     }
 
-    /* Sticky first column on mobile */
+    /* Sticky first column (vehicle names) on mobile */
     @media (max-width: 768px) {
-      .sticky-vehicle-col {
+      tbody .sticky-vehicle-col {
         position: sticky;
         left: 0;
         z-index: 20;
-      }
-
-      /* Header cell needs higher z-index when both sticky header and column intersect */
-      .sticky-header th.sticky-vehicle-col {
-        z-index: 30;
-      }
-
-      /* Vehicle cells get row background */
-      tr:nth-child(odd) .sticky-vehicle-col {
-        background-color: white;
-      }
-
-      tr:nth-child(even) .sticky-vehicle-col {
-        background-color: rgb(248 250 252 / 0.5);
-      }
-
-      /* Hover state for sticky cells */
-      tr:hover .sticky-vehicle-col {
-        background-color: rgb(238 242 255 / 0.3);
+        /* Solid light purple background */
+        background-color: #f5f3ff;
       }
 
       /* Shadow to indicate scrollable content */
-      .sticky-vehicle-col::after {
+      tbody .sticky-vehicle-col::after {
         content: '';
         position: absolute;
         top: 0;
         right: -8px;
         bottom: 0;
         width: 8px;
-        background: linear-gradient(to right, rgba(0,0,0,0.08), transparent);
+        background: linear-gradient(to right, rgba(99, 102, 241, 0.15), transparent);
         pointer-events: none;
       }
     }
@@ -215,7 +199,7 @@
           <thead class="sticky-header">
             <tr class="bg-gradient-to-r from-indigo-600 to-purple-600">
               <th scope="col" rowspan="2"
-                class="sticky-vehicle-col py-3 sm:py-4 pl-2 sm:pl-4 pr-2 sm:pr-3 text-left text-xs sm:text-sm font-semibold text-white sm:pl-6 w-[90px] sm:w-auto sm:min-w-[200px] bg-gradient-to-r from-indigo-600 to-indigo-600 sm:from-transparent sm:to-transparent">
+                class="py-3 sm:py-4 pl-2 sm:pl-4 pr-2 sm:pr-3 text-left text-xs sm:text-sm font-semibold text-white sm:pl-6 w-[90px] sm:w-auto sm:min-w-[200px]">
                 <div class="flex items-center gap-1 sm:gap-2">
                   <svg xmlns="http://www.w3.org/2000/svg" class="hidden sm:block h-5 w-5 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
