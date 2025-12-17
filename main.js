@@ -152,12 +152,12 @@ function createTableCell(speed, content = '?', isVehicleName = false) {
   const cell = document.createElement('td');
 
   if (isVehicleName) {
-    // Vehicle name cell styling
-    cell.className = 'py-4 pl-4 pr-3 text-sm font-medium text-slate-900 sm:pl-6';
+    // Vehicle name cell styling - sticky on mobile with smaller text
+    cell.className = 'sticky-vehicle-col relative py-2 sm:py-4 pl-2 sm:pl-4 pr-2 sm:pr-3 text-[11px] sm:text-sm font-medium text-slate-900 sm:pl-6 w-[90px] sm:w-auto';
     cell.innerHTML = `
-      <div class="flex items-center gap-2">
-        <span class="hidden sm:inline-flex w-2 h-2 rounded-full bg-indigo-400"></span>
-        <span>${content}</span>
+      <div class="flex items-center gap-1 sm:gap-2">
+        <span class="hidden sm:inline-flex w-2 h-2 rounded-full bg-indigo-400 flex-shrink-0"></span>
+        <span class="leading-tight">${content}</span>
       </div>
     `;
   } else {
