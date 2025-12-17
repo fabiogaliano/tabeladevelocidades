@@ -243,17 +243,58 @@ function updateProgress() {
   }
 }
 
-// Show success celebration
+// Show success celebration with confetti
 function showCelebration() {
   celebration.classList.remove('hidden');
+
+  // Small confetti burst for correct answer
+  if (typeof confetti !== 'undefined') {
+    confetti({
+      particleCount: 30,
+      spread: 60,
+      origin: { y: 0.7 },
+      colors: ['#22c55e', '#10b981', '#6366f1'],
+    });
+  }
+
   setTimeout(() => {
     celebration.classList.add('hidden');
   }, 1000);
 }
 
-// Show completion modal
+// Show completion modal with big celebration
 function showCompletionModal() {
   completionModal.classList.remove('hidden');
+
+  // Big confetti celebration for completing the table
+  if (typeof confetti !== 'undefined') {
+    // Multiple bursts
+    const duration = 3000;
+    const end = Date.now() + duration;
+
+    const frame = () => {
+      confetti({
+        particleCount: 3,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0 },
+        colors: ['#6366f1', '#8b5cf6', '#22c55e', '#fbbf24'],
+      });
+      confetti({
+        particleCount: 3,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1 },
+        colors: ['#6366f1', '#8b5cf6', '#22c55e', '#fbbf24'],
+      });
+
+      if (Date.now() < end) {
+        requestAnimationFrame(frame);
+      }
+    };
+
+    frame();
+  }
 }
 
 // Hide completion modal
