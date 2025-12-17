@@ -1,101 +1,369 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tabela de Velocidades - Carta de Condução</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          animation: {
+            'fade-in': 'fadeIn 0.3s ease-out',
+            'slide-up': 'slideUp 0.3s ease-out',
+            'bounce-in': 'bounceIn 0.5s ease-out',
+            'pulse-success': 'pulseSuccess 0.6s ease-out',
+            'shake': 'shake 0.5s ease-out',
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' },
+            },
+            slideUp: {
+              '0%': { opacity: '0', transform: 'translateY(20px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+            bounceIn: {
+              '0%': { opacity: '0', transform: 'scale(0.3)' },
+              '50%': { transform: 'scale(1.05)' },
+              '70%': { transform: 'scale(0.9)' },
+              '100%': { opacity: '1', transform: 'scale(1)' },
+            },
+            pulseSuccess: {
+              '0%': { boxShadow: '0 0 0 0 rgba(34, 197, 94, 0.7)' },
+              '70%': { boxShadow: '0 0 0 10px rgba(34, 197, 94, 0)' },
+              '100%': { boxShadow: '0 0 0 0 rgba(34, 197, 94, 0)' },
+            },
+            shake: {
+              '0%, 100%': { transform: 'translateX(0)' },
+              '10%, 30%, 50%, 70%, 90%': { transform: 'translateX(-4px)' },
+              '20%, 40%, 60%, 80%': { transform: 'translateX(4px)' },
+            },
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #94a3b8;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #64748b;
+    }
+
+    /* Smooth transitions */
+    * {
+      transition-property: color, background-color, border-color, box-shadow, transform;
+      transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+      transition-duration: 150ms;
+    }
+
+    /* Cell tap highlight for mobile */
+    .speed-cell {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Table header sticky on mobile */
+    @media (max-width: 768px) {
+      .sticky-header th {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+    }
+
+    /* Progress bar animation */
+    .progress-fill {
+      transition: width 0.5s ease-out;
+    }
+
+    /* Celebration confetti */
+    .confetti {
+      position: fixed;
+      pointer-events: none;
+      z-index: 100;
+    }
+  </style>
 </head>
 
-<body>
-  <div class="px-4 sm:px-6 lg:px-8">
-    <div class="sm:flex sm:items-center">
-      <div class="sm:flex-auto">
-        <h1 class="text-xl font-semibold text-gray-900 mb-3 mt-3">
-          Tabela de Velocidades
-        </h1>
-        <p>
-          Clicar em <span class="text-blue-700">?</span> para inserir valor de
-          velocidade máxima
-        </p>
-        <p>
-          Se o veículo não puder transitar na via, inserir valor
-          <span class="text-blue-700">0</span>
-        </p>
+<body class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 min-h-screen">
+  <!-- Header -->
+  <header class="bg-white/80 backdrop-blur-sm border-b border-slate-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            Tabela de Velocidades
+          </h1>
+          <p class="text-slate-600 text-sm sm:text-base mt-1">
+            Pratique os limites de velocidade para a carta de condução
+          </p>
+        </div>
+
+        <!-- Progress Section -->
+        <div class="flex items-center gap-4">
+          <div class="flex flex-col items-end">
+            <div class="flex items-center gap-2 text-sm font-medium text-slate-700">
+              <span id="correct-count" class="text-green-600 font-bold text-lg">0</span>
+              <span class="text-slate-400">/</span>
+              <span id="total-count" class="text-slate-500 font-bold text-lg">0</span>
+              <span class="text-slate-500">corretas</span>
+            </div>
+            <div class="w-32 sm:w-48 h-2 bg-slate-200 rounded-full overflow-hidden mt-1">
+              <div id="progress-bar" class="progress-fill h-full bg-gradient-to-r from-green-400 to-emerald-500 rounded-full" style="width: 0%"></div>
+            </div>
+          </div>
+          <button id="reset-btn"
+            class="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            title="Recomeçar" aria-label="Recomeçar jogo">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
-    <div class="mt-8 flex flex-col">
-      <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
-        <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
-          <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-            <table id="speed-limits-table" class="min-w-full divide-y divide-gray-300">
-              <thead class="bg-indigo-50">
-                <tr>
-                  <th scope="col" rowspan="2"
-                    class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">
-                    Veículos
-                  </th>
-                  <th scope="col" colspan="2" class="px-3 py-3.5 text-center text-sm font-semibold text-gray-900">
-                    Dentro Localidades
-                  </th>
-                  <th scope="col" rowspan="2"
-                    class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 text-center">
-                    Restantes Vias Públicas (Fora Localidades)
-                  </th>
-                  <th scope="col" rowspan="2"
-                    class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 text-center">
-                    Vias Reservadas
-                  </th>
-                  <th scope="col" rowspan="2"
-                    class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 text-center">
-                    Auto-Estradas
-                  </th>
-                </tr>
-                <tr>
-                  <th scope="col" class="px-1 py-2.5 text-center text-xs text-gray-900">
-                    Zona Coexistência
-                  </th>
-                  <th scope="col" class="px-1 py-2.5 text-center text-xs text-gray-900">
-                    Outras Zonas
-                  </th>
-                </tr>
-              </thead>
-              <!-- t-body created dynamically -->
-            </table>
+  </header>
+
+  <!-- Instructions Card -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-6 animate-fade-in">
+      <div class="flex flex-col sm:flex-row gap-4 sm:gap-8">
+        <div class="flex items-start gap-3">
+          <div class="flex-shrink-0 w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+            <span class="text-indigo-600 font-bold">?</span>
+          </div>
+          <div>
+            <p class="text-slate-700 text-sm sm:text-base">
+              <strong class="text-slate-900">Clique nas células</strong> com <span class="inline-flex items-center justify-center w-6 h-6 bg-indigo-100 text-indigo-600 rounded font-bold text-sm">?</span> para inserir o limite de velocidade
+            </p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <div class="flex-shrink-0 w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
+            <span class="text-amber-600 font-bold">0</span>
+          </div>
+          <div>
+            <p class="text-slate-700 text-sm sm:text-base">
+              Se o veículo <strong class="text-slate-900">não pode transitar</strong> nessa via, insira <span class="inline-flex items-center justify-center w-6 h-6 bg-amber-100 text-amber-600 rounded font-bold text-sm">0</span>
+            </p>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Modal popup -->
-  <div id="modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-75 flex justify-center items-center">
-    <div class="bg-white rounded-lg p-8 max-w-md">
-      <h3 class="text-lg font-medium mb-2">Velocidade máxima</h3>
-      <h3 id="modal-title" class="text-lg font-medium mb-2"></h3>
-
-      <input id="speed-input" type="number" inputmode="numeric"
-        class="border border-gray-300 p-2 rounded-lg w-full mb-3" />
-
-      <div id="incorrect-speed-warning"
-        class="hidden bg-red-100 border border-red-400 text-red-700 px-3 py-3.5 mb-3 rounded relative" role="alert">
-        <strong class="font-bold">Incorrecto!</strong>
-        <span class="absolute top-0 bottom-0 right-0 px-4 py-3">
-          <svg id="clean-incorrect-answer" class="fill-current h-6 w-6 text-red-500" role="button"
-            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-            <title>Limpar</title>
-            <path
-              d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z" />
-          </svg>
-        </span>
+  <!-- Main Table Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24">
+    <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden animate-slide-up">
+      <div class="overflow-x-auto">
+        <table id="speed-limits-table" class="min-w-full">
+          <thead class="sticky-header">
+            <tr class="bg-gradient-to-r from-indigo-600 to-purple-600">
+              <th scope="col" rowspan="2"
+                class="py-4 pl-4 pr-3 text-left text-sm font-semibold text-white sm:pl-6 min-w-[200px]">
+                <div class="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                  </svg>
+                  Veículos
+                </div>
+              </th>
+              <th scope="col" colspan="2" class="px-3 py-4 text-center text-sm font-semibold text-white border-l border-white/20">
+                <div class="flex items-center justify-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                  Dentro Localidades
+                </div>
+              </th>
+              <th scope="col" rowspan="2"
+                class="px-3 py-4 text-center text-sm font-semibold text-white border-l border-white/20 min-w-[120px]">
+                <div class="flex flex-col items-center gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                  </svg>
+                  <span>Fora Localidades</span>
+                </div>
+              </th>
+              <th scope="col" rowspan="2"
+                class="px-3 py-4 text-center text-sm font-semibold text-white border-l border-white/20 min-w-[120px]">
+                <div class="flex flex-col items-center gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                  </svg>
+                  <span>Vias Reservadas</span>
+                </div>
+              </th>
+              <th scope="col" rowspan="2"
+                class="px-3 py-4 text-center text-sm font-semibold text-white border-l border-white/20 min-w-[120px]">
+                <div class="flex flex-col items-center gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  <span>Auto-Estradas</span>
+                </div>
+              </th>
+            </tr>
+            <tr class="bg-gradient-to-r from-indigo-500 to-purple-500">
+              <th scope="col" class="px-2 py-2 text-center text-xs font-medium text-white/90 border-l border-white/20">
+                Zona Coexistência
+              </th>
+              <th scope="col" class="px-2 py-2 text-center text-xs font-medium text-white/90 border-l border-white/10">
+                Outras Zonas
+              </th>
+            </tr>
+          </thead>
+          <!-- tbody created dynamically -->
+        </table>
       </div>
+    </div>
 
-      <div class="flex justify-end space-x-4">
-        <button id="close-modal" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold px-4 py-2 rounded-lg">
-          Fechar
-        </button>
-        <button id="submit-speed" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg">
-          Enviar
+    <!-- Legend -->
+    <div class="mt-6 flex flex-wrap justify-center gap-4 sm:gap-8 text-sm">
+      <div class="flex items-center gap-2">
+        <span class="w-6 h-6 bg-green-100 text-green-600 rounded-lg flex items-center justify-center font-bold text-xs">90</span>
+        <span class="text-slate-600">Resposta correta</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="w-6 h-6 bg-red-100 text-red-500 rounded-lg flex items-center justify-center font-bold text-xs">✕</span>
+        <span class="text-slate-600">Resposta incorreta</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="w-6 h-6 bg-slate-100 text-slate-400 rounded-lg flex items-center justify-center font-bold text-xs">—</span>
+        <span class="text-slate-600">Não pode transitar</span>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal Overlay -->
+  <div id="modal" class="hidden fixed inset-0 z-50">
+    <!-- Backdrop -->
+    <div id="modal-backdrop" class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+
+    <!-- Modal Content (centered on desktop, bottom sheet on mobile) -->
+    <div class="absolute inset-0 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div id="modal-content"
+        class="relative bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-3xl shadow-2xl transform transition-all">
+
+        <!-- Modal Header -->
+        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-5 sm:rounded-t-2xl rounded-t-3xl">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <h3 class="text-lg font-semibold text-white">Velocidade Máxima</h3>
+            </div>
+            <button id="close-modal-x"
+              class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-lg flex items-center justify-center text-white/80 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/50"
+              aria-label="Fechar">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="p-6">
+          <div id="modal-title" class="mb-5 text-center sm:text-left"></div>
+
+          <!-- Input Group -->
+          <div class="relative">
+            <input id="speed-input" type="number" inputmode="numeric" pattern="[0-9]*"
+              class="w-full text-3xl sm:text-2xl font-bold text-center py-4 px-6 border-2 border-slate-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none transition-all"
+              placeholder="0"
+              aria-label="Velocidade máxima em km/h" />
+            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">km/h</span>
+          </div>
+
+          <!-- Error Message -->
+          <div id="incorrect-speed-warning"
+            class="hidden mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl animate-shake" role="alert">
+            <div class="flex items-center gap-3">
+              <div class="flex-shrink-0 w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
+              <div>
+                <p class="font-semibold">Resposta incorreta</p>
+                <p class="text-sm text-red-600">Tente novamente!</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex gap-3 mt-6">
+            <button id="close-modal"
+              class="flex-1 px-6 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2">
+              Fechar
+            </button>
+            <button id="submit-speed"
+              class="flex-1 px-6 py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg shadow-indigo-500/30 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 active:scale-[0.98]">
+              Confirmar
+            </button>
+          </div>
+
+          <!-- Keyboard Hints -->
+          <div class="hidden sm:flex justify-center gap-4 mt-4 text-xs text-slate-400">
+            <span><kbd class="px-1.5 py-0.5 bg-slate-100 rounded text-slate-500">Enter</kbd> para confirmar</span>
+            <span><kbd class="px-1.5 py-0.5 bg-slate-100 rounded text-slate-500">Esc</kbd> para fechar</span>
+          </div>
+        </div>
+
+        <!-- Safe area padding for mobile -->
+        <div class="h-6 sm:hidden"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Celebration Overlay -->
+  <div id="celebration" class="hidden fixed inset-0 pointer-events-none z-[60]">
+    <div id="celebration-content" class="absolute inset-0 flex items-center justify-center">
+      <div class="bg-green-500 text-white px-8 py-4 rounded-2xl shadow-2xl animate-bounce-in">
+        <div class="flex items-center gap-3">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span class="text-xl font-bold">Correto!</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Completion Modal -->
+  <div id="completion-modal" class="hidden fixed inset-0 z-50">
+    <div class="absolute inset-0 bg-slate-900/70 backdrop-blur-sm"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-8 text-center animate-bounce-in">
+        <div class="w-20 h-20 mx-auto bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mb-6">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <h2 class="text-2xl font-bold text-slate-900 mb-2">Parabéns!</h2>
+        <p class="text-slate-600 mb-6">Completaste a tabela de velocidades com sucesso!</p>
+        <button id="restart-btn"
+          class="w-full px-6 py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg transition-all">
+          Jogar Novamente
         </button>
       </div>
     </div>
